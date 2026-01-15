@@ -1,16 +1,17 @@
 name: "Hello"
 
 on:
-  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened]
   push:
-    branches:
-      [master]
-
+    branches: [master]
+   
 jobs:
   hello:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: ./
         with:
-          name: "Leonardo"
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+          label: 'needs-review'
