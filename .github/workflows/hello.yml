@@ -2,6 +2,9 @@ name: "Hello"
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      [master]
 
 jobs:
   hello:
@@ -9,3 +12,5 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: ./
+        with:
+          name: "Leonardo"
