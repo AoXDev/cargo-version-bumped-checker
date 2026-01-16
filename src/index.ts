@@ -17,15 +17,13 @@ export async function run() {
       console.log(`The pull request event is: ${pullRequest}`);
       setFailed("Not a Pull Request");
       throw new Error("This action can only be run on Pull Requests");
-      
     }
     //git show personal/master:Cargo.toml
     const mainBranch = context.payload.repository?.default_branch;
     if (!mainBranch) {
       setFailed("Cannot determine repository default branch");
     }
-    const showcaseBranches = await runCommand('git', ['branch']);
-    console.log(`The branches are: ${showcaseBranches.stdout}`);
+    await runCommand('git', ['fetch', '--all']);
     let mainVersion = await runCommand('git', ['show', `origin/main:Cargo.toml`], { ignoreReturnCode: true });
     if (!mainVersion.success || (mainVersion.stderr.includes('invalid')) || mainVersion.stdout.includes('fatal')) {
       mainVersion = await runCommand('git', ['show', 'origin/master:Cargo.toml'], { ignoreReturnCode: true});
