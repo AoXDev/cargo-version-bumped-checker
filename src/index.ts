@@ -14,6 +14,7 @@ export async function run() {
 
   try {
     if (!pullRequest) {
+      console.log(`The pull request event is: ${pullRequest}`);
       setFailed("Not a Pull Request");
       throw new Error("This action can only be run on Pull Requests");
       
@@ -23,11 +24,12 @@ export async function run() {
     if (!mainBranch) {
       setFailed("Cannot determine repository default branch");
     }
-    let mainVersion = await runCommand('git', ['show', `${mainBranch}:Cargo.toml`], { ignoreReturnCode: true });
+    let mainVersion = await runCommand('git', ['show', `personal/master:Cargo.toml`], { ignoreReturnCode: true });
     if (!mainVersion.success || (mainVersion.stderr.includes('invalid')) || mainVersion.stdout.includes('fatal')) {
       mainVersion = await runCommand('git', ['show', 'origin/master:Cargo.toml'], { ignoreReturnCode: true});
       if (!mainVersion.success) {
         setFailed(mainVersion.stderr ?? "Unknown error when retrieving main/master's version");
+        throw new Error("Failed to get main/master's version");
       }
     }
     

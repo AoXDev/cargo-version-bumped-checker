@@ -34850,6 +34850,7 @@ async function run() {
     const postComment = createPoster();
     try {
         if (!pullRequest) {
+            console.log(`The pull request event is: ${pullRequest}`);
             (0, core_1.setFailed)("Not a Pull Request");
             throw new Error("This action can only be run on Pull Requests");
         }
@@ -34858,11 +34859,12 @@ async function run() {
         if (!mainBranch) {
             (0, core_1.setFailed)("Cannot determine repository default branch");
         }
-        let mainVersion = await runCommand('git', ['show', `${mainBranch}:Cargo.toml`], { ignoreReturnCode: true });
+        let mainVersion = await runCommand('git', ['show', `personal/master:Cargo.toml`], { ignoreReturnCode: true });
         if (!mainVersion.success || (mainVersion.stderr.includes('invalid')) || mainVersion.stdout.includes('fatal')) {
             mainVersion = await runCommand('git', ['show', 'origin/master:Cargo.toml'], { ignoreReturnCode: true });
             if (!mainVersion.success) {
                 (0, core_1.setFailed)((_b = mainVersion.stderr) !== null && _b !== void 0 ? _b : "Unknown error when retrieving main/master's version");
+                throw new Error("Failed to get main/master's version");
             }
         }
         let curVersion = await runCommand('cat', ['Cargo.toml'], { ignoreReturnCode: true });
