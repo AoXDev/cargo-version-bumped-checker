@@ -18,7 +18,7 @@ export async function run() {
     }
     
     let mainVersion = await runCommand('git', ['show', `origin/main:Cargo.toml`], { ignoreReturnCode: true });
-    if (!mainVersion.success || (mainVersion.stderr.includes('invalid'))) {
+    if (!mainVersion.success || (mainVersion.stderr.includes('invalid')) || mainVersion.stdout.includes('fatal')) {
       mainVersion = await runCommand('git', ['show', 'origin/master:Cargo.toml'], { ignoreReturnCode: true});
       if (!mainVersion.success) {
         setFailed(mainVersion.stderr ?? "Unknown error when retrieving main/master's version");
@@ -26,7 +26,7 @@ export async function run() {
     }
     
     let curVersion = await runCommand('cat', ['Cargo.toml'], { ignoreReturnCode: true});
-    if (!curVersion.success) {
+    if (!curVersion.success || curVersion.stdout.includes('fatal')) {
       setFailed(curVersion.stderr ?? "Unknown error trying to incoming version");
     }
     const parsedMain = mainVersion.stdout.match(/version\s*=\s*["'](.*?)["']/)![1];
