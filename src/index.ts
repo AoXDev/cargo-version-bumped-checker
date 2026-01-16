@@ -52,7 +52,7 @@ export async function run() {
 }
 
 function createPoster() {
-    const githubToken = getInput("github-token")
+    const githubToken = getInput("github_token")
     const pullRequestNumber = context.payload.pull_request?.number;
     const octkit = getOctokit(githubToken);
 

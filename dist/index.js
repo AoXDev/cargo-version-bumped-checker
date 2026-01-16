@@ -34885,7 +34885,7 @@ async function run() {
 }
 function createPoster() {
     var _a;
-    const githubToken = (0, core_1.getInput)("github-token");
+    const githubToken = (0, core_1.getInput)("github_token");
     const pullRequestNumber = (_a = github_1.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
     const octkit = (0, github_1.getOctokit)(githubToken);
     return function postComment(msg) {
