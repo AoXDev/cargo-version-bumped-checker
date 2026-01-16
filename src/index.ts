@@ -5,10 +5,6 @@ import { gte } from 'semver';
 
 
 export async function run() {
-  const token = getInput("github_token");
-  //const label = getInput("label");
-
-  const octokit = getOctokit(token);
   const pullRequest = context.payload.pull_request;
   const postComment = createPoster();
 
@@ -18,11 +14,7 @@ export async function run() {
       setFailed("Not a Pull Request");
       throw new Error("This action can only be run on Pull Requests");
     }
-    //git show personal/master:Cargo.toml
-    const mainBranch = context.payload.repository?.default_branch;
-    if (!mainBranch) {
-      setFailed("Cannot determine repository default branch");
-    }
+
     await runCommand('git', ['fetch', '--all']);
     let mainVersion = await runCommand('git', ['show', `origin/main:Cargo.toml`], { ignoreReturnCode: true });
     if (!mainVersion.success || (mainVersion.stderr.includes('invalid')) || mainVersion.stdout.includes('fatal')) {
@@ -42,16 +34,10 @@ export async function run() {
     console.log("Master version: ", parsedMain);
     console.log("Incoming Current Version: ", parsedCur);
     if (gte(parsedMain, parsedCur)) {
-      await postComment("Main/Master's version is greater or equals to incoming version, please fix this.");
-      setFailed(`Main/Master's Version is greater than incoming version, please bump the version before continuing`);
+      await postComment("Master's version is greater or equals to incoming version, please fix this.");
+      setFailed(`Master's Version is greater than incoming version, please bump the version before continuing`);
     }
 
-    /*await octokit.rest.issues.addLabels({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      issue_number: pullRequest.number,
-      labels: [label],
-    });*/
   } catch (error) {
     setFailed((error as Error)?.message ?? "Unknown error");
   }
@@ -96,10 +82,6 @@ async function runCommand(
     stdout: result.stdout,
     stderr: result.stderr
   };
-}
-
-function getVersion(inp: any) {
-  //TODO
 }
 
 run();
