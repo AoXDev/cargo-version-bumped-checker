@@ -42,3 +42,9 @@ To use this repository:
 1. `npm i` 
 2. `npm run build`
 3. Good to make your changes!
+
+
+#### Built by:
+<a href="https://scrapingpenguins.com/">
+    <img src="./default-monochrome-black.png" alt="isolated" width="150" height="28" />
+</a> 
