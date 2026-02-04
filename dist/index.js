@@ -34844,7 +34844,7 @@ const semver_1 = __nccwpck_require__(2088);
 async function run() {
     var _a, _b, _c;
     const pullRequest = github_1.context.payload.pull_request;
-    const postComment = createPoster();
+    //const postComment = createPoster();
     try {
         if (!pullRequest) {
             console.log(`The pull request event is: ${pullRequest}`);
@@ -34869,10 +34869,10 @@ async function run() {
         console.log("Master version: ", parsedMain);
         console.log("Incoming Current Version: ", parsedCur);
         if ((0, semver_1.gte)(parsedMain, parsedCur)) {
-            await postComment("Master's version is greater or equals to incoming version, please fix this.");
+            await commentOnPR(false, "Master's version is greater or equals to incoming version, please fix this.");
             (0, core_1.setFailed)(`Master's Version is greater than incoming version, please bump the version before continuing`);
         }
-        await updateCommentToSuccess();
+        await commentOnPR(true);
     }
     catch (error) {
         (0, core_1.setFailed)((_c = error === null || error === void 0 ? void 0 : error.message) !== null && _c !== void 0 ? _c : "Unknown error");
@@ -34891,11 +34891,19 @@ function createPoster() {
         });
     };
 }
-async function updateCommentToSuccess() {
+async function commentOnPR(passStatus, msg = "") {
     var _a;
     const githubToken = (0, core_1.getInput)("github_token");
     const pullRequestNumber = (_a = github_1.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
     const octokit = (0, github_1.getOctokit)(githubToken);
+    if (passStatus == false) {
+        await octokit.rest.issues.createComment({
+            ...github_1.context.repo,
+            issue_number: pullRequestNumber,
+            body: msg
+        });
+        return;
+    }
     try {
         const { data: comments } = await octokit.rest.issues.listComments({
             ...github_1.context.repo,

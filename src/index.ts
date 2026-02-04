@@ -6,7 +6,7 @@ import { gte } from 'semver';
 
 export async function run() {
   const pullRequest = context.payload.pull_request;
-  const postComment = createPoster();
+  //const postComment = createPoster();
 
   try {
     if (!pullRequest) {
@@ -34,11 +34,11 @@ export async function run() {
     console.log("Master version: ", parsedMain);
     console.log("Incoming Current Version: ", parsedCur);
     if (gte(parsedMain, parsedCur)) {
-      await postComment("Master's version is greater or equals to incoming version, please fix this.");
+      await commentOnPR(false, "Master's version is greater or equals to incoming version, please fix this.");
       setFailed(`Master's Version is greater than incoming version, please bump the version before continuing`);
     }
 
-    await updateCommentToSuccess();
+    await commentOnPR(true);
 
   } catch (error) {
     setFailed((error as Error)?.message ?? "Unknown error");
@@ -59,10 +59,19 @@ function createPoster() {
     }
 }
 
-async function updateCommentToSuccess() {
+async function commentOnPR(passStatus: boolean, msg: string | null = "") {
   const githubToken = getInput("github_token");
   const pullRequestNumber = context.payload.pull_request?.number;
   const octokit = getOctokit(githubToken);
+
+  if (passStatus == false) {
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: pullRequestNumber!,
+      body: msg!
+    })
+    return;
+  }
 
   try {
     const { data: comments } = await octokit.rest.issues.listComments({
