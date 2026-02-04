@@ -34902,9 +34902,9 @@ async function updateCommentToSuccess() {
             issue_number: pullRequestNumber,
         });
         const botComment = comments.find((comment) => {
-            var _a, _b;
+            var _a, _b, _c;
             return ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === "Bot" &&
-                ((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes("Master's version is greater or equals to incoming version"));
+                (((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes("Version check passed")) || ((_c = comment.body) === null || _c === void 0 ? void 0 : _c.includes("please fix this")));
         });
         if (botComment) {
             await octokit.rest.issues.updateComment({

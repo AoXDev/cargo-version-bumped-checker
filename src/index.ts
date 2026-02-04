@@ -70,10 +70,12 @@ async function updateCommentToSuccess() {
       issue_number: pullRequestNumber!,
     });
 
+    
+
     const botComment = comments.find(
       (comment) =>
         comment.user?.type === "Bot" &&
-        comment.body?.includes("Master's version is greater or equals to incoming version")
+        (comment.body?.includes("Version check passed") || comment.body?.includes("please fix this"))
     );
 
     if (botComment) {
