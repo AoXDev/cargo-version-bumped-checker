@@ -129,7 +129,7 @@ async function commentOnPR(passStatus: boolean, msg: string | null = "") {
         await octokit.rest.issues.updateComment({
           ...context.repo,
           comment_id: botComment.id,
-          body: "✅ Version check passed! The incoming version is greater than master's version.",
+          body: "✅ Version check passed! The incoming version is greater than main's version.",
         });
         info("Updated existing comment to reflect success");
         return;
@@ -137,7 +137,7 @@ async function commentOnPR(passStatus: boolean, msg: string | null = "") {
         await octokit.rest.issues.createComment({
           ...context.repo,
           issue_number: pullRequestNumber!,
-          body: "✅ Version check passed! The incoming version is greater than master's version.",
+          body: "✅ Version check passed! The incoming version is greater than main's version.",
         });
         info("Posted new success comment");
         return;

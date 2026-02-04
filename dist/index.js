@@ -34939,7 +34939,7 @@ async function commentOnPR(passStatus, msg = "") {
                 await octokit.rest.issues.updateComment({
                     ...github_1.context.repo,
                     comment_id: botComment.id,
-                    body: "✅ Version check passed! The incoming version is greater than master's version.",
+                    body: "✅ Version check passed! The incoming version is greater than main's version.",
                 });
                 (0, core_1.info)("Updated existing comment to reflect success");
                 return;
@@ -34948,7 +34948,7 @@ async function commentOnPR(passStatus, msg = "") {
                 await octokit.rest.issues.createComment({
                     ...github_1.context.repo,
                     issue_number: pullRequestNumber,
-                    body: "✅ Version check passed! The incoming version is greater than master's version.",
+                    body: "✅ Version check passed! The incoming version is greater than main's version.",
                 });
                 (0, core_1.info)("Posted new success comment");
                 return;
