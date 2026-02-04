@@ -34875,8 +34875,10 @@ async function run() {
         if ((0, semver_1.gte)(parsedMain, parsedCur)) {
             await commentOnPR(false, "Master's version is greater or equals to incoming version, please fix this.");
             (0, core_1.setFailed)(`Master's Version is greater than incoming version, please bump the version before continuing`);
+            return;
         }
         await commentOnPR(true);
+        return;
     }
     catch (error) {
         (0, core_1.setFailed)((_c = error === null || error === void 0 ? void 0 : error.message) !== null && _c !== void 0 ? _c : "Unknown error");

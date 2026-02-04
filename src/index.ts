@@ -63,9 +63,11 @@ export async function run() {
       setFailed(
         `Master's Version is greater than incoming version, please bump the version before continuing`,
       );
+      return;
     }
 
     await commentOnPR(true);
+    return;
   } catch (error) {
     setFailed((error as Error)?.message ?? "Unknown error");
   }
