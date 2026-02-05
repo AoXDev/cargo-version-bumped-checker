@@ -33,9 +33,9 @@ export async function run() {
       if (!mainVersion.success) {
         setFailed(
           mainVersion.stderr ??
-            "Unknown error when retrieving main/master's version",
+            "Unknown error when retrieving main's version",
         );
-        throw new Error("Failed to get main/master's version");
+        throw new Error("Failed to get main's version");
       }
     }
 
@@ -53,15 +53,15 @@ export async function run() {
     const parsedCur = curVersion.stdout.match(
       /version\s*=\s*["'](.*?)["']/,
     )![1];
-    console.log("Master version: ", parsedMain);
+    console.log("Main version: ", parsedMain);
     console.log("Incoming Current Version: ", parsedCur);
     if (gte(parsedMain, parsedCur)) {
       await commentOnPR(
         false,
-        "Master's version is greater or equals to incoming version, please fix this.",
+        "Main's version is greater or equals to incoming version, please fix this.",
       );
       setFailed(
-        `Master's Version is greater than incoming version, please bump the version before continuing`,
+        `Main's Version is greater than incoming version, please bump the version before continuing`,
       );
       return;
     }

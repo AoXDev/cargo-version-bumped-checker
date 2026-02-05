@@ -34858,8 +34858,8 @@ async function run() {
             mainVersion.stdout.includes("fatal")) {
             mainVersion = await runCommand("git", ["show", "origin/master:Cargo.toml"], { ignoreReturnCode: true });
             if (!mainVersion.success) {
-                (0, core_1.setFailed)((_a = mainVersion.stderr) !== null && _a !== void 0 ? _a : "Unknown error when retrieving main/master's version");
-                throw new Error("Failed to get main/master's version");
+                (0, core_1.setFailed)((_a = mainVersion.stderr) !== null && _a !== void 0 ? _a : "Unknown error when retrieving main's version");
+                throw new Error("Failed to get main's version");
             }
         }
         let curVersion = await runCommand("cat", ["Cargo.toml"], {
@@ -34870,11 +34870,11 @@ async function run() {
         }
         const parsedMain = mainVersion.stdout.match(/version\s*=\s*["'](.*?)["']/)[1];
         const parsedCur = curVersion.stdout.match(/version\s*=\s*["'](.*?)["']/)[1];
-        console.log("Master version: ", parsedMain);
+        console.log("Main version: ", parsedMain);
         console.log("Incoming Current Version: ", parsedCur);
         if ((0, semver_1.gte)(parsedMain, parsedCur)) {
-            await commentOnPR(false, "Master's version is greater or equals to incoming version, please fix this.");
-            (0, core_1.setFailed)(`Master's Version is greater than incoming version, please bump the version before continuing`);
+            await commentOnPR(false, "Main's version is greater or equals to incoming version, please fix this.");
+            (0, core_1.setFailed)(`Main's Version is greater than incoming version, please bump the version before continuing`);
             return;
         }
         await commentOnPR(true);
