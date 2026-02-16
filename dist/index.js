@@ -34844,34 +34844,41 @@ const semver_1 = __nccwpck_require__(2088);
 async function run() {
     var _a, _b, _c;
     const pullRequest = github_1.context.payload.pull_request;
-    const postComment = createPoster();
+    //const postComment = createPoster();
     try {
         if (!pullRequest) {
             console.log(`The pull request event is: ${pullRequest}`);
             (0, core_1.setFailed)("Not a Pull Request");
             throw new Error("This action can only be run on Pull Requests");
         }
-        await runCommand('git', ['fetch', '--all']);
-        let mainVersion = await runCommand('git', ['show', `origin/main:Cargo.toml`], { ignoreReturnCode: true });
-        if (!mainVersion.success || (mainVersion.stderr.includes('invalid')) || mainVersion.stdout.includes('fatal')) {
-            mainVersion = await runCommand('git', ['show', 'origin/master:Cargo.toml'], { ignoreReturnCode: true });
+        await runCommand("git", ["fetch", "--all"]);
+        let mainVersion = await runCommand("git", ["show", `origin/main:Cargo.toml`], { ignoreReturnCode: true });
+        if (!mainVersion.success ||
+            mainVersion.stderr.includes("invalid") ||
+            mainVersion.stdout.includes("fatal")) {
+            mainVersion = await runCommand("git", ["show", "origin/master:Cargo.toml"], { ignoreReturnCode: true });
             if (!mainVersion.success) {
-                (0, core_1.setFailed)((_a = mainVersion.stderr) !== null && _a !== void 0 ? _a : "Unknown error when retrieving main/master's version");
-                throw new Error("Failed to get main/master's version");
+                (0, core_1.setFailed)((_a = mainVersion.stderr) !== null && _a !== void 0 ? _a : "Unknown error when retrieving main's version");
+                throw new Error("Failed to get main's version");
             }
         }
-        let curVersion = await runCommand('cat', ['Cargo.toml'], { ignoreReturnCode: true });
-        if (!curVersion.success || curVersion.stdout.includes('fatal')) {
+        let curVersion = await runCommand("cat", ["Cargo.toml"], {
+            ignoreReturnCode: true,
+        });
+        if (!curVersion.success || curVersion.stdout.includes("fatal")) {
             (0, core_1.setFailed)((_b = curVersion.stderr) !== null && _b !== void 0 ? _b : "Unknown error trying to incoming version");
         }
         const parsedMain = mainVersion.stdout.match(/version\s*=\s*["'](.*?)["']/)[1];
         const parsedCur = curVersion.stdout.match(/version\s*=\s*["'](.*?)["']/)[1];
-        console.log("Master version: ", parsedMain);
+        console.log("Main version: ", parsedMain);
         console.log("Incoming Current Version: ", parsedCur);
         if ((0, semver_1.gte)(parsedMain, parsedCur)) {
-            await postComment("Master's version is greater or equals to incoming version, please fix this.");
-            (0, core_1.setFailed)(`Master's Version is greater than incoming version, please bump the version before continuing`);
+            await commentOnPR(false, "Main's version is greater or equals to incoming version, please fix this.");
+            (0, core_1.setFailed)(`Main's Version is greater than incoming version, please bump the version before continuing`);
+            return;
         }
+        await commentOnPR(true);
+        return;
     }
     catch (error) {
         (0, core_1.setFailed)((_c = error === null || error === void 0 ? void 0 : error.message) !== null && _c !== void 0 ? _c : "Unknown error");
@@ -34886,21 +34893,83 @@ function createPoster() {
         octkit.rest.issues.createComment({
             ...github_1.context.repo,
             issue_number: pullRequestNumber,
-            body: msg
+            body: msg,
         });
     };
+}
+async function commentOnPR(passStatus, msg = "") {
+    var _a;
+    const githubToken = (0, core_1.getInput)("github_token");
+    const pullRequestNumber = (_a = github_1.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
+    const octokit = (0, github_1.getOctokit)(githubToken);
+    try {
+        const { data: comments } = await octokit.rest.issues.listComments({
+            ...github_1.context.repo,
+            issue_number: pullRequestNumber,
+        });
+        const botComment = comments.find((comment) => {
+            var _a, _b, _c;
+            return ((_a = comment.user) === null || _a === void 0 ? void 0 : _a.type) === "Bot" &&
+                (((_b = comment.body) === null || _b === void 0 ? void 0 : _b.includes("Version check passed")) ||
+                    ((_c = comment.body) === null || _c === void 0 ? void 0 : _c.includes("please fix this")));
+        });
+        if (passStatus == false) {
+            if (botComment) {
+                await octokit.rest.issues.updateComment({
+                    ...github_1.context.repo,
+                    comment_id: botComment.id,
+                    body: msg,
+                });
+                (0, core_1.info)("Updated existing comment to reflect failure");
+                return;
+            }
+            else {
+                await octokit.rest.issues.createComment({
+                    ...github_1.context.repo,
+                    issue_number: pullRequestNumber,
+                    body: msg,
+                });
+                const commentexist = botComment == null;
+                (0, core_1.info)(`Updated existing comment to reflect failure, is botComment null: ${commentexist}`);
+                return;
+            }
+        }
+        else if (passStatus == true) {
+            if (botComment) {
+                await octokit.rest.issues.updateComment({
+                    ...github_1.context.repo,
+                    comment_id: botComment.id,
+                    body: "✅ Version check passed! The incoming version is greater than main's version.",
+                });
+                (0, core_1.info)("Updated existing comment to reflect success");
+                return;
+            }
+            else {
+                await octokit.rest.issues.createComment({
+                    ...github_1.context.repo,
+                    issue_number: pullRequestNumber,
+                    body: "✅ Version check passed! The incoming version is greater than main's version.",
+                });
+                (0, core_1.info)("Posted new success comment");
+                return;
+            }
+        }
+    }
+    catch (error) {
+        (0, core_1.info)(`Failed to update comment: ${error === null || error === void 0 ? void 0 : error.message}`);
+    }
 }
 async function runCommand(command, args, options) {
     const result = await (0, exec_1.getExecOutput)(command, args, {
         ignoreReturnCode: true,
-        ...options
+        ...options,
     });
     const success = result.exitCode === 0 || !!(options === null || options === void 0 ? void 0 : options.ignoreReturnCode);
     return {
         success,
         exitCode: result.exitCode,
         stdout: result.stdout,
-        stderr: result.stderr
+        stderr: result.stderr,
     };
 }
 run();
